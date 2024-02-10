@@ -1,0 +1,49 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:1.25.0
+    ports:
+      - 8000:80
+    volumes:
+      # ローカルのsrc配下をマウント
+      - ./src:/var/www/html
+      # ローカルのnginxフォルダをマウント
+      - ./docker/nginx:/etc/nginx/conf.d
+    # 依存関係
+    depends_on:
+      - app
+  app:
+    build:
+      # Dockerfileを格納するフォルダパス
+      context: ./docker/php
+      dockerfile: Dockerfile
+    # コンテナ内で使用する環境変数定義
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      # srcフォルダをコンテナにマウント
+      - ./src:/var/www/html
+      # 依存関係
+    depends_on:
+      - mysql
+  mysql:
+    image: mysql:8.0
+    # コンテナ内で使用する環境変数定義
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      # 名前付きボリュームをコンテナに紐付ける
+      - mysqldata:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      # - ./docker/mysql/sql:/docker-entrypoint-initdb.d
+    ports:
+      - 3306:3306
+volumes:
+  # 名前付きボリューム作成
+  mysqldata:
