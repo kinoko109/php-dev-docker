@@ -1,3 +1,5 @@
 # php-dev-docker
 
-DockerでPHPとMySQLの開発環境を用意
+``` shell
+$ docker-comopse up -d
+```
